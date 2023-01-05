@@ -1,1 +1,1 @@
-rootProject.name = "armeria-grpc"
+rootProject.name = "webflux-armeria-grpc"
