@@ -1,13 +1,7 @@
+import com.google.protobuf.gradle.generateProtoTasks
+import com.google.protobuf.gradle.protobuf
+import com.google.protobuf.gradle.protoc
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
-buildscript {
-    repositories {
-        gradlePluginPortal()
-    }
-    dependencies {
-        classpath("com.google.protobuf:protobuf-gradle-plugin:0.9.1")
-    }
-}
 
 plugins {
     id("org.springframework.boot") version "3.0.1"
@@ -38,9 +32,8 @@ dependencies {
 
     //https://armeria.dev/tutorials/grpc/blog
     //https://github.com/google/protobuf-gradle-plugin
-    implementation("com.linecorp.armeria:armeria:1.21.0")
-    implementation("io.grpc:grpc-kotlin-stub:1.3.0")
-    implementation("io.grpc:grpc-protobuf:1.51.0")
+    implementation("com.linecorp.armeria:armeria-spring-boot2-webflux-starter")
+    implementation("com.linecorp.armeria:armeria-grpc")
     implementation("com.google.protobuf:protobuf-java:3.21.12")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -58,17 +51,22 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
+dependencyManagement {
+    imports {
+        mavenBom("com.linecorp.armeria:armeria-bom:1.21.0")
+        mavenBom("io.netty:netty-bom:4.1.86.Final")
+    }
+}
+
 protobuf {
-    protoc {
-        // You still need protoc like in the non-Android case
+    protoc{
         artifact = "com.google.protobuf:protoc:3.21.12"
     }
     generateProtoTasks{
         all().forEach() { task ->
-            task.builtins {
-                kotlin{
-                }
+                task.generateDescriptorSet = true
+                task.descriptorSetOptions.includeSourceInfo = true
+                task.descriptorSetOptions.includeImports = true
             }
         }
-    }
 }

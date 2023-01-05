@@ -3,7 +3,7 @@ syntax = "proto3";
 package com.webflux.armeria.grpc;
 option java_package = "com.webflux.armeria.grpc";
 option java_multiple_files = true;
-
+option java_outer_classname = "BlogProto";
 
 message BlogPost {
   int32 id = 1;
