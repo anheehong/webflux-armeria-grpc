@@ -1,5 +1,8 @@
 package com.webflux.armeria.grpc.service
 
-class BlogService{
+import proto.blog.BlogServiceGrpc.BlogServiceImplBase
+
+class BlogService: BlogServiceImplBase() {
+
 
 }

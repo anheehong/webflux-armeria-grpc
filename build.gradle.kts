@@ -1,6 +1,4 @@
-import com.google.protobuf.gradle.generateProtoTasks
-import com.google.protobuf.gradle.protobuf
-import com.google.protobuf.gradle.protoc
+import com.google.protobuf.gradle.*
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
@@ -21,6 +19,9 @@ repositories {
 }
 
 dependencies {
+
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:3.0.1")
+
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb-reactive")
     implementation("org.springframework.boot:spring-boot-starter-data-redis-reactive")
     implementation("org.springframework.boot:spring-boot-starter-webflux")
@@ -35,6 +36,7 @@ dependencies {
     implementation("com.linecorp.armeria:armeria-spring-boot2-webflux-starter")
     implementation("com.linecorp.armeria:armeria-grpc")
     implementation("com.google.protobuf:protobuf-java:3.21.12")
+    implementation ("javax.annotation:javax.annotation-api:1.3.2")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")
@@ -60,13 +62,33 @@ dependencyManagement {
 
 protobuf {
     protoc{
+        // protocol buffer를 컴파일하는 protoc의 스펙을 지정
         artifact = "com.google.protobuf:protoc:3.21.12"
     }
+    plugins {
+        // 컴파일 과정중 추가할 부분, 해당 프로젝트는 grpc 모델이 만들어여야하므로 아래의 설정이 있음.
+        id("grpc"){
+            artifact = "io.grpc:protoc-gen-grpc-java:1.51.0"
+        }
+    }
     generateProtoTasks{
-        all().forEach() { task ->
+        all().forEach { task ->
                 task.generateDescriptorSet = true
                 task.descriptorSetOptions.includeSourceInfo = true
                 task.descriptorSetOptions.includeImports = true
+                task.descriptorSetOptions.path = "${buildDir}/resources/main/META-INF/armeria/grpc/service-name.dsc"
+                task.plugins{
+                    id("grpc")
+                }
             }
         }
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir("build/generated/source/proto/main/grpc")
+            srcDir("build/generated/source/proto/main/java")
+        }
+    }
 }
